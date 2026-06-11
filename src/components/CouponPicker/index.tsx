@@ -7,27 +7,29 @@ import classnames from 'classnames';
 interface CouponPickerProps {
   visible: boolean;
   coupons: CouponItem[];
-  selectedId?: string;
-  price: number;
-  onConfirm: (couponId?: string) => void;
+  selectedCouponId?: string;
+  amount: number;
+  onSelect: (couponId?: string) => void;
   onClose: () => void;
+  hasFooter?: boolean;
 }
 
 const CouponPicker: React.FC<CouponPickerProps> = ({
   visible,
   coupons,
-  selectedId,
-  price,
-  onConfirm,
-  onClose
+  selectedCouponId,
+  amount,
+  onSelect,
+  onClose,
+  hasFooter = true
 }) => {
   const availableCoupons = useMemo(() => {
-    return coupons.filter(c => !c.isUsed && price >= c.minAmount);
-  }, [coupons, price]);
+    return coupons.filter(c => !c.isUsed && amount >= c.minAmount);
+  }, [coupons, amount]);
 
   const unavailableCoupons = useMemo(() => {
-    return coupons.filter(c => c.isUsed || price < c.minAmount);
-  }, [coupons, price]);
+    return coupons.filter(c => c.isUsed || amount < c.minAmount);
+  }, [coupons, amount]);
 
   const allCoupons = [...availableCoupons, ...unavailableCoupons];
 
@@ -44,8 +46,8 @@ const CouponPicker: React.FC<CouponPickerProps> = ({
         <ScrollView className={styles.list} scrollY enhanced showScrollbar={false}>
           {allCoupons.length > 0 ? (
             allCoupons.map(c => {
-              const isAvailable = !c.isUsed && price >= c.minAmount;
-              const isSelected = selectedId === c.id;
+              const isAvailable = !c.isUsed && amount >= c.minAmount;
+              const isSelected = selectedCouponId === c.id;
               return (
                 <View
                   key={c.id}
@@ -54,7 +56,7 @@ const CouponPicker: React.FC<CouponPickerProps> = ({
                     { [styles.disabled]: !isAvailable },
                     { [styles.selected]: isSelected }
                   )}
-                  onClick={() => isAvailable && onConfirm(isSelected ? undefined : c.id)}
+                  onClick={() => isAvailable && onSelect(isSelected ? undefined : c.id)}
                 >
                   <View className={styles.couponLeft}>
                     <Text className={styles.couponAmount}>{c.discount}</Text>
@@ -78,11 +80,13 @@ const CouponPicker: React.FC<CouponPickerProps> = ({
           )}
         </ScrollView>
 
-        <View className={styles.footer}>
-          <View className={styles.confirmBtn} onClick={() => onConfirm(selectedId)}>
-            确认使用
+        {hasFooter && (
+          <View className={styles.footer}>
+            <View className={styles.confirmBtn} onClick={() => onSelect(selectedCouponId)}>
+              确认使用
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </View>
   );

@@ -484,3 +484,89 @@
     opacity: 0.9;
   }
 }
+
+.confirmThemeInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+}
+
+.confirmCover {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-md;
+  background: $color-bg-card;
+  flex-shrink: 0;
+}
+
+.confirmThemeName {
+  flex: 1;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.confirmPriceBox {
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.confirmPriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+}
+
+.confirmPriceLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.confirmCouponTag {
+  font-size: 22rpx;
+  padding: 2rpx 12rpx;
+  background: rgba(124, 58, 237, 0.1);
+  color: $color-primary;
+  border-radius: $radius-sm;
+}
+
+.confirmPriceValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.confirmPriceDiscount {
+  font-size: $font-size-sm;
+  color: $color-success;
+  font-weight: $font-weight-semibold;
+}
+
+.confirmPriceDivider {
+  height: 1rpx;
+  background: $color-divider;
+  margin: $spacing-xs 0;
+}
+
+.confirmPriceLabelBold {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.confirmPriceFinal {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}

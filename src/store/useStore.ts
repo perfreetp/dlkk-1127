@@ -239,7 +239,7 @@ export const useStore = create<UserState & UserActions>()(
         const newPurchased = purchased.some(p => p.id === theme.id) ? purchased : [...purchased, theme];
         const newDownloaded = downloaded.some(d => d.id === theme.id) ? downloaded : [...downloaded, theme];
         const newCoupons = usedCoupon ? coupons.map(c => c.id === couponId ? { ...c, isUsed: true } : c) : coupons;
-        const newOrders = orders.map(o => o.id === orderId ? { ...o, status: 'paid' as const, price: finalPrice } : o);
+        const newOrders = orders.filter(o => o.id !== orderId); // 彻底删除旧的试用订单
         const newTrial = trial.filter(t => t.id !== theme.id);
 
         const { downloadStates } = get();

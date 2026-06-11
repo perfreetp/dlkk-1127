@@ -43,6 +43,7 @@ const OrderPage: React.FC = () => {
   const [showCouponPicker, setShowCouponPicker] = useState(false);
   const [currentTrialOrder, setCurrentTrialOrder] = useState<OrderItem | null>(null);
   const [selectedCouponId, setSelectedCouponId] = useState<string | undefined>(undefined);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const orders = useStore(s => s.orders);
   const coupons = useStore(s => s.coupons);
@@ -83,10 +84,37 @@ const OrderPage: React.FC = () => {
   const handleSelectCoupon = (couponId?: string) => {
     setSelectedCouponId(couponId);
     setShowCouponPicker(false);
-    if (currentTrialOrder && couponId !== undefined) {
-      setTimeout(() => handleConvertTrial(currentTrialOrder), 100);
+    // 选完券后打开确认支付弹窗
+    if (currentTrialOrder) {
+      setShowConfirmModal(true);
     }
   };
+
+  const handleConfirmPurchase = () => {
+    if (!currentTrialOrder) return;
+    const order = currentTrialOrder;
+    setShowConfirmModal(false);
+    handleConvertTrial(order);
+  };
+
+  const getConfirmInfo = () => {
+    if (!currentTrialOrder) return { originalPrice: 0, finalPrice: 0, savedAmount: 0, couponName: '' };
+    const original = currentTrialOrder.originalPrice || 0;
+    let final = original;
+    let saved = 0;
+    let couponName = '';
+    if (selectedCouponId) {
+      const c = coupons.find(x => x.id === selectedCouponId && !x.isUsed);
+      if (c && original >= c.minAmount) {
+        final = Math.max(0, original - c.discount);
+        saved = c.discount;
+        couponName = c.title;
+      }
+    }
+    return { originalPrice: original, finalPrice: final, savedAmount: saved, couponName };
+  };
+
+  const confirmInfo = getConfirmInfo();
 
   const handleConvertTrial = (order: OrderItem) => {
     if (!order.originalPrice || order.originalPrice <= 0) {
@@ -302,7 +330,46 @@ const OrderPage: React.FC = () => {
           selectedCouponId={selectedCouponId}
           onSelect={handleSelectCoupon}
           onClose={() => { setShowCouponPicker(false); setCurrentTrialOrder(null); }}
+          hasFooter={true}
         />
+      )}
+
+      {showConfirmModal && currentTrialOrder && (
+        <View className={styles.modalMask} onClick={() => setShowConfirmModal(false)}>
+          <View className={styles.modalPanel} onClick={e => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>确认购买</Text>
+            <View className={styles.confirmThemeInfo}>
+              <Image className={styles.confirmCover} src={currentTrialOrder.themeCover} mode="aspectFill" />
+              <Text className={styles.confirmThemeName}>{currentTrialOrder.themeTitle}</Text>
+            </View>
+
+            <View className={styles.confirmPriceBox}>
+              <View className={styles.confirmPriceRow}>
+                <Text className={styles.confirmPriceLabel}>主题原价</Text>
+                <Text className={styles.confirmPriceValue}>¥{confirmInfo.originalPrice}</Text>
+              </View>
+              {confirmInfo.savedAmount > 0 && (
+                <View className={styles.confirmPriceRow}>
+                  <Text className={styles.confirmPriceLabel}>
+                    优惠券抵扣
+                    <Text className={styles.confirmCouponTag}>{confirmInfo.couponName}</Text>
+                  </Text>
+                  <Text className={styles.confirmPriceDiscount}>-¥{confirmInfo.savedAmount}</Text>
+                </View>
+              )}
+              <View className={styles.confirmPriceDivider} />
+              <View className={styles.confirmPriceRow}>
+                <Text className={styles.confirmPriceLabelBold}>实付金额</Text>
+                <Text className={styles.confirmPriceFinal}>¥{confirmInfo.finalPrice}</Text>
+              </View>
+            </View>
+
+            <View className={styles.modalActions}>
+              <Text className={styles.modalCancel} onClick={() => setShowConfirmModal(false)}>取消</Text>
+              <Text className={styles.modalConfirm} onClick={handleConfirmPurchase}>确认支付</Text>
+            </View>
+          </View>
+        </View>
       )}
     </ScrollView>
   );

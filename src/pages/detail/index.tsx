@@ -282,9 +282,9 @@ const DetailPage: React.FC = () => {
       <CouponPicker
         visible={couponPickerVisible}
         coupons={coupons}
-        selectedId={selectedCouponId}
-        price={theme.price}
-        onConfirm={handleCouponConfirm}
+        selectedCouponId={selectedCouponId}
+        amount={theme.price}
+        onSelect={handleCouponConfirm}
         onClose={() => setCouponPickerVisible(false)}
       />
     </View>

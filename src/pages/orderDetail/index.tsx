@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, Image, ScrollView } from '@tarojs/components';
+import { View, Text, Image, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import { useStore } from '@/store/useStore';
 import { CouponPicker } from '@/components/CouponPicker';
@@ -32,6 +32,7 @@ export default function OrderDetail() {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
   const [selectedCouponId, setSelectedCouponId] = useState<string | undefined>(undefined);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const order = useMemo(() => orders.find(o => o.id === orderId), [orders, orderId]);
 
@@ -73,14 +74,44 @@ export default function OrderDetail() {
   const onSelectCoupon = (couponId?: string) => {
     setSelectedCouponId(couponId);
     closeCoupon();
+    // 选完券后打开确认弹窗
+    if (order && order.status === 'trial') {
+      setShowConfirmModal(true);
+    }
+  };
+
+  const getConfirmInfo = () => {
+    if (!order) return { originalPrice: 0, finalPrice: 0, savedAmount: 0, couponName: '' };
+    const original = order.originalPrice || 0;
+    let final = original;
+    let saved = 0;
+    let couponName = '';
+    if (selectedCouponId) {
+      const c = coupons.find(x => x.id === selectedCouponId && !x.isUsed);
+      if (c && original >= c.minAmount) {
+        final = Math.max(0, original - c.discount);
+        saved = c.discount;
+        couponName = c.title;
+      }
+    }
+    return { originalPrice: original, finalPrice: final, savedAmount: saved, couponName };
+  };
+
+  const confirmInfo = getConfirmInfo();
+
+  const handleConfirmPurchase = () => {
+    setShowConfirmModal(false);
+    handleConvertPurchase();
   };
 
   const handleConvertPurchase = () => {
+    if (!order) return;
     if (!order.originalPrice || order.originalPrice <= 0) {
       Taro.showToast({ title: '免费主题无需购买', icon: 'none' });
       return;
     }
     const res = convertTrialToPurchase(order.id, selectedCouponId);
+    setSelectedCouponId(undefined);
     if (res.success) {
       Taro.showToast({ title: `购买成功 ¥${res.finalPrice}`, icon: 'success' });
     }
@@ -109,10 +140,14 @@ export default function OrderDetail() {
     Taro.navigateTo({ url: `/pages/detail/index?id=${order.themeId}` });
   };
 
+  const handleConvertPurchaseNoCoupon = () => {
+    // 没选优惠券直接转购买，也打开确认弹窗
+    setSelectedCouponId(undefined);
+    setShowConfirmModal(true);
+  };
+
   const availableCoupons = coupons.filter(c => !c.isUsed && c.minAmount <= (order.originalPrice || 0));
-  const finalPrice = selectedCouponId
-    ? Math.max(0, (order.originalPrice || 0) - (availableCoupons.find(c => c.id === selectedCouponId)?.discount || 0))
-    : (order.originalPrice || 0);
+  const displayPrice = confirmInfo.finalPrice > 0 ? confirmInfo.finalPrice : (order.originalPrice || 0);
 
   return (
     <View className={styles.page}>
@@ -250,8 +285,8 @@ export default function OrderDetail() {
               选择优惠券
               {selectedCouponId ? ' (已选)' : ''}
             </Text>
-            <Text className={styles.primaryBtn} onClick={handleConvertPurchase}>
-              转购买 ¥{finalPrice}
+            <Text className={styles.primaryBtn} onClick={handleConvertPurchaseNoCoupon}>
+              转购买 ¥{displayPrice}
             </Text>
           </>
         )}
@@ -260,8 +295,8 @@ export default function OrderDetail() {
             <Text className={styles.secondaryBtn} onClick={openCoupon}>
               选择优惠券
             </Text>
-            <Text className={styles.primaryBtn} onClick={handleConvertPurchase}>
-              立即购买 ¥{order.originalPrice}
+            <Text className={styles.primaryBtn} onClick={handleConvertPurchaseNoCoupon}>
+              立即购买 ¥{displayPrice}
             </Text>
           </>
         )}
@@ -298,12 +333,50 @@ export default function OrderDetail() {
         />
       )}
 
+      {showConfirmModal && order && order.status === 'trial' && (
+        <View className={styles.modalMask} onClick={() => setShowConfirmModal(false)}>
+          <View className={styles.modalPanel} onClick={e => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>确认购买</Text>
+            <View className={styles.confirmThemeInfo}>
+              <Image className={styles.confirmCover} src={order.themeCover} mode="aspectFill" />
+              <Text className={styles.confirmThemeName}>{order.themeTitle}</Text>
+            </View>
+
+            <View className={styles.confirmPriceBox}>
+              <View className={styles.confirmPriceRow}>
+                <Text className={styles.confirmPriceLabel}>主题原价</Text>
+                <Text className={styles.confirmPriceValue}>¥{confirmInfo.originalPrice}</Text>
+              </View>
+              {confirmInfo.savedAmount > 0 && (
+                <View className={styles.confirmPriceRow}>
+                  <Text className={styles.confirmPriceLabel}>
+                    优惠券抵扣
+                    <Text className={styles.confirmCouponTag}>{confirmInfo.couponName}</Text>
+                  </Text>
+                  <Text className={styles.confirmPriceDiscount}>-¥{confirmInfo.savedAmount}</Text>
+                </View>
+              )}
+              <View className={styles.confirmPriceDivider} />
+              <View className={styles.confirmPriceRow}>
+                <Text className={styles.confirmPriceLabelBold}>实付金额</Text>
+                <Text className={styles.confirmPriceFinal}>¥{confirmInfo.finalPrice}</Text>
+              </View>
+            </View>
+
+            <View className={styles.modalActions}>
+              <Text className={styles.modalCancel} onClick={() => setShowConfirmModal(false)}>取消</Text>
+              <Text className={styles.modalConfirm} onClick={handleConfirmPurchase}>确认支付</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
       {showRefundModal && (
         <View className={styles.modalMask} onClick={() => setShowRefundModal(false)}>
           <View className={styles.modalPanel} onClick={e => e.stopPropagation()}>
             <Text className={styles.modalTitle}>申请退款</Text>
             <Text className={styles.modalDesc}>请填写退款原因，客服将在1-2个工作日内审核</Text>
-            <textarea
+            <Textarea
               className={styles.refundTextarea}
               value={refundReason}
               onInput={(e) => setRefundReason(e.detail.value)}
