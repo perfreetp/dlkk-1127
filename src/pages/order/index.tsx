@@ -5,33 +5,51 @@ import styles from './index.module.scss';
 import { OrderItem, CouponItem } from '@/types/theme';
 import EmptyState from '@/components/EmptyState';
 import InvoiceForm from '@/components/InvoiceForm';
+import CouponPicker from '@/components/CouponPicker';
 import { useStore } from '@/store/useStore';
 
-type TabKey = 'all' | 'paid' | 'refunding' | 'refunded';
+type TabKey = 'all' | 'trial' | 'paid' | 'refunding' | 'refunded';
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'all', label: '全部' },
+  { key: 'trial', label: '试用中' },
   { key: 'paid', label: '已完成' },
   { key: 'refunding', label: '退款中' },
   { key: 'refunded', label: '已退款' }
 ];
 
-const statusMap: Record<string, string> = {
-  paid: '已完成',
-  refunding: '退款中',
-  refunded: '已退款',
-  trial: '试用中'
+const statusMap: Record<string, { label: string; cls: string }> = {
+  paid: { label: '已完成', cls: 'paid' },
+  refunding: { label: '退款中', cls: 'refunding' },
+  refunded: { label: '已退款', cls: 'refunded' },
+  trial: { label: '试用中', cls: 'trial' }
+};
+
+const calcTrialRemaining = (order: OrderItem) => {
+  if (!order.trialStartDate || !order.trialDays) return { days: 0, expired: true, percent: 0 };
+  const start = new Date(order.trialStartDate).getTime();
+  const end = start + order.trialDays * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const remain = Math.max(0, end - now);
+  const total = end - start;
+  const days = Math.ceil(remain / (24 * 60 * 60 * 1000));
+  const percent = Math.max(0, Math.min(100, Math.round((remain / total) * 100)));
+  return { days, expired: remain <= 0, percent };
 };
 
 const OrderPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [invoiceVisible, setInvoiceVisible] = useState(false);
+  const [showCouponPicker, setShowCouponPicker] = useState(false);
+  const [currentTrialOrder, setCurrentTrialOrder] = useState<OrderItem | null>(null);
+  const [selectedCouponId, setSelectedCouponId] = useState<string | undefined>(undefined);
 
   const orders = useStore(s => s.orders);
   const coupons = useStore(s => s.coupons);
   const invoiceInfo = useStore(s => s.invoiceInfo);
   const applyRefund = useStore(s => s.applyRefund);
   const setInvoiceInfo = useStore(s => s.setInvoiceInfo);
+  const convertTrialToPurchase = useStore(s => s.convertTrialToPurchase);
 
   useDidShow(() => {
     console.log('[OrderPage] page show, orders count:', orders.length);
@@ -44,23 +62,43 @@ const OrderPage: React.FC = () => {
 
   const availableCoupons: CouponItem[] = coupons.filter(c => !c.isUsed);
 
+  const goOrderDetail = (orderId: string) => {
+    Taro.navigateTo({ url: `/pages/orderDetail/index?orderId=${orderId}` });
+  };
+
   const goDetail = (themeId: string) => {
     Taro.navigateTo({ url: `/pages/detail/index?id=${themeId}` });
   };
 
   const handleRefund = (order: OrderItem) => {
-    Taro.showModal({
-      title: '申请退款',
-      content: '确定要申请退款吗？退款将在1-3个工作日内原路返回。',
-      confirmText: '申请退款',
-      confirmColor: '#F53F3F',
-      success: res => {
-        if (res.confirm) {
-          applyRefund(order.id);
-          Taro.showToast({ title: '退款申请已提交', icon: 'success' });
-        }
-      }
-    });
+    goOrderDetail(order.id);
+  };
+
+  const openCouponForTrial = (order: OrderItem) => {
+    setCurrentTrialOrder(order);
+    setSelectedCouponId(undefined);
+    setShowCouponPicker(true);
+  };
+
+  const handleSelectCoupon = (couponId?: string) => {
+    setSelectedCouponId(couponId);
+    setShowCouponPicker(false);
+    if (currentTrialOrder && couponId !== undefined) {
+      setTimeout(() => handleConvertTrial(currentTrialOrder), 100);
+    }
+  };
+
+  const handleConvertTrial = (order: OrderItem) => {
+    if (!order.originalPrice || order.originalPrice <= 0) {
+      Taro.showToast({ title: '免费主题无需购买', icon: 'none' });
+      return;
+    }
+    const res = convertTrialToPurchase(order.id, selectedCouponId);
+    setSelectedCouponId(undefined);
+    setCurrentTrialOrder(null);
+    if (res.success) {
+      Taro.showToast({ title: `购买成功 ¥${res.finalPrice}`, icon: 'success' });
+    }
   };
 
   const handleInvoiceSave = (data: {
@@ -90,38 +128,117 @@ const OrderPage: React.FC = () => {
 
       <View className={styles.content}>
         {filteredOrders.length > 0 ? (
-          filteredOrders.map(order => (
-            <View key={order.id} className={styles.orderCard}>
-              <View className={styles.orderHeader}>
-                <Text className={styles.orderNo}>订单号: {order.orderNo}</Text>
-                <Text className={`${styles.orderStatus} ${styles[order.status]}`}>
-                  {statusMap[order.status]}
-                </Text>
-              </View>
-              <View className={styles.orderBody} onClick={() => goDetail(order.themeId)}>
-                <Image className={styles.cover} src={order.themeCover} mode="aspectFill" />
-                <View className={styles.themeInfo}>
-                  <Text className={styles.themeTitle}>{order.themeTitle}</Text>
-                  <Text className={styles.themePrice}>¥{order.price}</Text>
-                </View>
-              </View>
-              <View className={styles.orderFooter}>
-                <Text className={styles.orderTime}>{order.createTime}</Text>
-                <View className={styles.actionRow}>
-                  {order.status === 'paid' && (
-                    <Text className={`${styles.btn} ${styles.outline}`} onClick={() => handleRefund(order)}>
-                      申请退款
-                    </Text>
-                  )}
-                  <Text className={`${styles.btn} ${styles.primary}`} onClick={() => goDetail(order.themeId)}>
-                    再次购买
+          filteredOrders.map(order => {
+            const info = statusMap[order.status];
+            const trialInfo = order.status === 'trial' ? calcTrialRemaining(order) : null;
+            return (
+              <View key={order.id} className={styles.orderCard}>
+                <View className={styles.orderHeader}>
+                  <Text className={styles.orderNo}>订单号: {order.orderNo}</Text>
+                  <Text className={`${styles.orderStatus} ${styles[info.cls]}`}>
+                    {info.label}
                   </Text>
                 </View>
+
+                <View className={styles.orderBody} onClick={() => goOrderDetail(order.id)}>
+                  <Image className={styles.cover} src={order.themeCover} mode="aspectFill" />
+                  <View className={styles.themeInfo}>
+                    <Text className={styles.themeTitle}>{order.themeTitle}</Text>
+                    <View className={styles.priceRow}>
+                      {order.status === 'trial' ? (
+                        <>
+                          <Text className={styles.originalPrice}>¥{order.originalPrice}</Text>
+                          <Text className={styles.trialBadge}>免费试用</Text>
+                        </>
+                      ) : order.couponDiscount ? (
+                        <>
+                          <Text className={styles.originalPriceCross}>¥{order.originalPrice}</Text>
+                          <Text className={styles.themePrice}>¥{order.price}</Text>
+                        </>
+                      ) : (
+                        <Text className={styles.themePrice}>¥{order.price}</Text>
+                      )}
+                    </View>
+                    {order.status === 'trial' && trialInfo && (
+                      <View className={styles.trialProgressBar}>
+                        <View
+                          className={styles.trialProgressInner}
+                          style={{
+                            width: `${trialInfo.percent}%`,
+                            background: trialInfo.expired ? '#EF4444' : '#7C3AED'
+                          }}
+                        />
+                        <Text className={styles.trialProgressText}>
+                          {trialInfo.expired ? '试用已结束' : `剩余 ${trialInfo.days} 天`}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                <View className={styles.orderFooter}>
+                  <Text className={styles.orderTime}>{order.createTime}</Text>
+                  <View className={styles.actionRow}>
+                    {order.status === 'trial' && (
+                      <>
+                        <Text
+                          className={`${styles.btn} ${styles.outline}`}
+                          onClick={() => openCouponForTrial(order)}
+                        >
+                          用优惠券购买
+                        </Text>
+                        <Text
+                          className={`${styles.btn} ${styles.primary}`}
+                          onClick={() => handleConvertTrial(order)}
+                        >
+                          {trialInfo?.expired ? '立即购买' : '转购买'}
+                        </Text>
+                      </>
+                    )}
+                    {order.status === 'paid' && (
+                      <>
+                        <Text
+                          className={`${styles.btn} ${styles.outline}`}
+                          onClick={() => handleRefund(order)}
+                        >
+                          申请退款
+                        </Text>
+                        <Text
+                          className={`${styles.btn} ${styles.primary}`}
+                          onClick={() => goOrderDetail(order.id)}
+                        >
+                          查看详情
+                        </Text>
+                      </>
+                    )}
+                    {order.status === 'refunding' && (
+                      <Text
+                        className={`${styles.btn} ${styles.primary}`}
+                        style={{ background: '#F59E0B' }}
+                        onClick={() => goOrderDetail(order.id)}
+                      >
+                        查看进度
+                      </Text>
+                    )}
+                    {order.status === 'refunded' && (
+                      <Text
+                        className={`${styles.btn} ${styles.primary}`}
+                        style={{ background: '#6B7280' }}
+                        onClick={() => goOrderDetail(order.id)}
+                      >
+                        查看详情
+                      </Text>
+                    )}
+                  </View>
+                </View>
               </View>
-            </View>
-          ))
+            );
+          })
         ) : (
-          <EmptyState icon="📋" text="暂无订单" />
+          <EmptyState
+            icon={activeTab === 'trial' ? '🎁' : activeTab === 'refunding' ? '⏳' : '📋'}
+            text={activeTab === 'trial' ? '暂无试用记录' : activeTab === 'refunding' ? '暂无退款申请' : '暂无订单'}
+          />
         )}
 
         <View className={styles.couponSection}>
@@ -176,6 +293,17 @@ const OrderPage: React.FC = () => {
         onSave={handleInvoiceSave}
         onClose={() => setInvoiceVisible(false)}
       />
+
+      {showCouponPicker && currentTrialOrder && (
+        <CouponPicker
+          visible={showCouponPicker}
+          coupons={coupons}
+          amount={currentTrialOrder.originalPrice || 0}
+          selectedCouponId={selectedCouponId}
+          onSelect={handleSelectCoupon}
+          onClose={() => { setShowCouponPicker(false); setCurrentTrialOrder(null); }}
+        />
+      )}
     </ScrollView>
   );
 };

@@ -117,6 +117,64 @@
   color: $color-price;
 }
 
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-xs;
+}
+
+.originalPrice {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  text-decoration: none;
+}
+
+.originalPriceCross {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  text-decoration: line-through;
+}
+
+.trialBadge {
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  background: rgba(124, 58, 237, 0.1);
+  color: $color-primary;
+  border-radius: $radius-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.trialProgressBar {
+  position: relative;
+  height: 36rpx;
+  background: $color-bg-hover;
+  border-radius: 18rpx;
+  overflow: hidden;
+  margin-top: $spacing-sm;
+}
+
+.trialProgressInner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 18rpx;
+  transition: width 0.3s ease;
+  opacity: 0.2;
+}
+
+.trialProgressText {
+  position: relative;
+  z-index: 1;
+  display: block;
+  line-height: 36rpx;
+  text-align: center;
+  font-size: 22rpx;
+  font-weight: $font-weight-semibold;
+  color: $color-text-secondary;
+}
+
 .orderFooter {
   display: flex;
   align-items: center;

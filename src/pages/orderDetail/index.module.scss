@@ -1,0 +1,486 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 20rpx $page-padding;
+  background: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.back {
+  font-size: 56rpx;
+  line-height: 1;
+  color: $color-text-primary;
+  padding: 10rpx 20rpx 10rpx 0;
+  font-weight: 300;
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  padding-right: 60rpx;
+}
+
+.scroll {
+  height: calc(100vh - 100rpx);
+}
+
+.statusCard {
+  margin: $spacing-md $page-padding 0;
+  border-radius: $radius-xl;
+  padding: $spacing-xl $spacing-lg;
+  color: #fff;
+  text-align: center;
+  box-shadow: $shadow-card;
+}
+
+.statusIcon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.statusLabel {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.statusDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  display: block;
+}
+
+.trialInfo {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.trialText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}
+
+.themeCard {
+  display: flex;
+  align-items: center;
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  gap: $spacing-md;
+  box-shadow: $shadow-card;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.themeCover {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  flex-shrink: 0;
+}
+
+.themeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.themeTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+  @include text-ellipsis;
+}
+
+.themeMeta {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.themePrice {
+  font-size: 36rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.sectionCard {
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-md;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+}
+
+.priceLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.couponTag {
+  font-size: 22rpx;
+  padding: 2rpx 12rpx;
+  background: rgba(124, 58, 237, 0.1);
+  color: $color-primary;
+  border-radius: $radius-sm;
+}
+
+.priceValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.priceValueDiscount {
+  font-size: $font-size-sm;
+  color: $color-success;
+  font-weight: $font-weight-semibold;
+}
+
+.priceDivider {
+  height: 1rpx;
+  background: $color-divider;
+  margin: $spacing-sm 0;
+}
+
+.priceLabelBold {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.priceFinal {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.invoiceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.invoiceStatus {
+  font-size: $font-size-sm;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.invoiceAction {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  padding: $spacing-xs $spacing-md;
+  background: rgba(124, 58, 237, 0.08);
+  border-radius: $radius-button;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.refundReasonBox {
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.refundReasonLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.refundReasonText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 20rpx;
+}
+
+.timelineItem {
+  position: relative;
+  padding-bottom: $spacing-lg;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.timelineDot {
+  position: absolute;
+  left: 0;
+  top: 8rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.timelineLine {
+  position: absolute;
+  left: 8rpx;
+  top: 28rpx;
+  width: 4rpx;
+  bottom: 0;
+  background: $color-divider;
+}
+
+.timelineContent {
+  padding-left: $spacing-lg;
+}
+
+.timelineTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+}
+
+.timelineDesc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.timelineTime {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.infoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.infoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+  display: flex;
+  gap: $spacing-md;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.secondaryBtn {
+  flex: 1;
+  height: $button-height-lg;
+  line-height: $button-height-lg;
+  text-align: center;
+  border-radius: $radius-button;
+  background: $color-bg-hover;
+  color: $color-text-primary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    background: $color-bg-tag;
+  }
+}
+
+.primaryBtn {
+  flex: 1.2;
+  height: $button-height-lg;
+  line-height: $button-height-lg;
+  text-align: center;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-gradient-start, $color-gradient-end);
+  color: #fff;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.primaryBtnDanger {
+  flex: 1.2;
+  height: $button-height-lg;
+  line-height: $button-height-lg;
+  text-align: center;
+  border-radius: $radius-button;
+  background: $color-error;
+  color: #fff;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.modalMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalPanel {
+  width: 85%;
+  max-width: 600rpx;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modalTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  display: block;
+  text-align: center;
+}
+
+.modalDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: block;
+  text-align: center;
+  margin-top: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.refundTextarea {
+  width: 100%;
+  min-height: 200rpx;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+  box-sizing: border-box;
+}
+
+.placeholder {
+  color: $color-text-tertiary;
+}
+
+.modalActions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
+}
+
+.modalCancel {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: $radius-button;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    background: $color-bg-tag;
+  }
+}
+
+.modalConfirm {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-gradient-start, $color-gradient-end);
+  color: #fff;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+  }
+}

@@ -214,3 +214,144 @@
   padding: 0 $spacing-xs;
   margin-right: $spacing-xs;
 }
+
+.tabCount {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-left: 4rpx;
+}
+
+.themeList {
+  padding: $spacing-md $spacing-lg;
+}
+
+.themeRow {
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.themeRowMain {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-sm;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.rowCover {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  flex-shrink: 0;
+}
+
+.rowInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.rowTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.rowMeta {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.rowTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  align-items: center;
+}
+
+.rowTag {
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  background: rgba(59, 130, 246, 0.1);
+  color: $color-info;
+  border-radius: $radius-sm;
+}
+
+.rowTagFree {
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  background: rgba(16, 185, 129, 0.1);
+  color: $color-success;
+  border-radius: $radius-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.rowTagPrice {
+  font-size: 22rpx;
+  padding: 2rpx 12rpx;
+  background: rgba(239, 68, 68, 0.08);
+  color: $color-price;
+  border-radius: $radius-sm;
+  font-weight: $font-weight-bold;
+}
+
+.rowTagLocal {
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  background: rgba(16, 185, 129, 0.08);
+  color: $color-success;
+  border-radius: $radius-sm;
+}
+
+.rowTagTrial {
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  background: rgba(124, 58, 237, 0.08);
+  color: $color-primary;
+  border-radius: $radius-sm;
+  font-weight: $font-weight-medium;
+}
+
+.rowActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}
+
+.actionBtn {
+  padding: 12rpx 28rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.actionPrimary {
+  background: linear-gradient(135deg, $color-gradient-start, $color-gradient-end);
+  color: #fff;
+}
+
+.actionDanger {
+  background: rgba(239, 68, 68, 0.08);
+  color: $color-error;
+  border: 2rpx solid rgba(239, 68, 68, 0.2);
+}
+
+.actionWarn {
+  background: rgba(245, 158, 11, 0.08);
+  color: $color-warning;
+  border: 2rpx solid rgba(245, 158, 11, 0.2);
+}

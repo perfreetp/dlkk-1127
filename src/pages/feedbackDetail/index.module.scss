@@ -1,0 +1,351 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 20rpx $page-padding;
+  background: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.back {
+  font-size: 56rpx;
+  line-height: 1;
+  color: $color-text-primary;
+  padding: 10rpx 20rpx 10rpx 0;
+  font-weight: 300;
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  padding-right: 60rpx;
+}
+
+.scroll {
+  height: calc(100vh - 100rpx);
+}
+
+.statusCard {
+  margin: $spacing-md $page-padding 0;
+  border-radius: $radius-xl;
+  padding: $spacing-xl $spacing-lg;
+  color: #fff;
+  text-align: center;
+  box-shadow: $shadow-card;
+}
+
+.statusIcon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.statusLabel {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.statusDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  display: block;
+}
+
+.sectionCard {
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-md;
+}
+
+.typeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.typeTag {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: 8rpx 20rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+}
+
+.typeIcon {
+  font-size: 28rpx;
+}
+
+.rating {
+  font-size: 32rpx;
+  letter-spacing: 2rpx;
+}
+
+.contentText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  display: block;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.imageItem {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.createTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-md;
+  display: block;
+}
+
+.themeCard {
+  display: flex;
+  align-items: center;
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  gap: $spacing-md;
+  box-shadow: $shadow-card;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.themeCover {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  flex-shrink: 0;
+}
+
+.themeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.themeLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.themeTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  @include text-ellipsis;
+}
+
+.themeHint {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.themeArrow {
+  font-size: 48rpx;
+  color: $color-text-tertiary;
+  font-weight: 300;
+  flex-shrink: 0;
+}
+
+.replyCard {
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(59, 130, 246, 0.05));
+  border-radius: $radius-lg;
+  border: 1rpx solid rgba(124, 58, 237, 0.1);
+}
+
+.replyHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.avatar {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-gradient-start, $color-gradient-end);
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: $font-weight-bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.replyName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.replyContent {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  display: block;
+}
+
+.replyTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+  display: block;
+  text-align: right;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 20rpx;
+}
+
+.timelineItem {
+  position: relative;
+  padding-bottom: $spacing-lg;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.timelineDot {
+  position: absolute;
+  left: 0;
+  top: 8rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.timelineLine {
+  position: absolute;
+  left: 8rpx;
+  top: 28rpx;
+  width: 4rpx;
+  bottom: 0;
+  background: $color-divider;
+}
+
+.timelineContent {
+  padding-left: $spacing-lg;
+}
+
+.timelineTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+}
+
+.timelineDesc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.timelineMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $spacing-xs;
+}
+
+.timelineOperator {
+  font-size: 22rpx;
+  color: $color-primary;
+  background: rgba(124, 58, 237, 0.08);
+  padding: 2rpx 12rpx;
+  border-radius: $radius-sm;
+}
+
+.timelineTime {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+}
+
+.previewMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.previewImg {
+  width: 90%;
+  border-radius: $radius-lg;
+}
+
+.previewClose {
+  position: absolute;
+  bottom: calc(80rpx + env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: $font-size-sm;
+}

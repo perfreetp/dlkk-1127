@@ -59,15 +59,31 @@ export interface CreatorInfo {
   rating: number;
 }
 
+export interface RefundNode {
+  time: string;
+  status: 'applied' | 'reviewing' | 'approved' | 'rejected' | 'completed';
+  title: string;
+  description?: string;
+}
+
 export interface OrderItem {
   id: string;
   themeId: string;
   themeTitle: string;
   themeCover: string;
   price: number;
+  originalPrice: number;
   status: 'paid' | 'refunding' | 'refunded' | 'trial';
   createTime: string;
   orderNo: string;
+  couponId?: string;
+  couponTitle?: string;
+  couponDiscount?: number;
+  invoiceStatus: 'none' | 'requested' | 'issued';
+  trialStartDate?: string;
+  trialDays?: number;
+  refundReason?: string;
+  refundNodes?: RefundNode[];
 }
 
 export interface CouponItem {
@@ -77,6 +93,13 @@ export interface CouponItem {
   minAmount: number;
   expireTime: string;
   isUsed: boolean;
+}
+
+export interface FeedbackNode {
+  time: string;
+  title: string;
+  content?: string;
+  operator?: string;
 }
 
 export interface FeedbackItem {
@@ -89,4 +112,15 @@ export interface FeedbackItem {
   status: 'pending' | 'processing' | 'resolved';
   themeId?: string;
   themeTitle?: string;
+  themeCover?: string;
+  reply?: string;
+  replyTime?: string;
+  nodes?: FeedbackNode[];
+}
+
+export interface DownloadState {
+  themeId: string;
+  downloadedAt?: string;
+  isLocal: boolean;
+  size?: string;
 }

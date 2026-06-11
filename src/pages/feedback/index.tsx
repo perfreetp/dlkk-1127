@@ -228,7 +228,11 @@ const FeedbackPage: React.FC = () => {
         </View>
         {feedbacks.length > 0 ? (
           feedbacks.map((f: FeedbackItem) => (
-            <View key={f.id} className={styles.historyCard}>
+            <View
+              key={f.id}
+              className={styles.historyCard}
+              onClick={() => Taro.navigateTo({ url: `/pages/feedbackDetail/index?feedbackId=${f.id}` })}
+            >
               <Text className={styles.historyType}>
                 {typeOptions.find(o => o.key === f.type)?.label || f.type}
               </Text>

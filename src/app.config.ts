@@ -7,7 +7,9 @@ export default defineAppConfig({
     'pages/creator/index',
     'pages/order/index',
     'pages/feedback/index',
-    'pages/update/index'
+    'pages/update/index',
+    'pages/orderDetail/index',
+    'pages/feedbackDetail/index'
   ],
   window: {
     backgroundTextStyle: 'light',

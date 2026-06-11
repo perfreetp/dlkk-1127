@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, Image, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
@@ -17,20 +17,23 @@ const tabs: { key: TabKey; label: string }[] = [
 
 const MinePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('purchased');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const purchased = useStore(s => s.purchased);
   const downloaded = useStore(s => s.downloaded);
   const trial = useStore(s => s.trial);
   const favorite = useStore(s => s.favorite);
   const updateAvailable = useStore(s => s.updateAvailable);
+  const downloadStates = useStore(s => s.downloadStates);
+  const downloadTheme = useStore(s => s.downloadTheme);
+  const removeLocalTheme = useStore(s => s.removeLocalTheme);
+  const isFavorite = useStore(s => s.isFavorite);
+  const removeFavorite = useStore(s => s.removeFavorite);
+  const addFavorite = useStore(s => s.addFavorite);
 
   useDidShow(() => {
-    console.log('[MinePage] page show, purchased:', purchased.length, 'favorite:', favorite.length);
+    console.log('[MinePage] page show');
   });
-
-  useEffect(() => {
-    console.log('[MinePage] mounted');
-  }, []);
 
   const goDetail = (id: string) => {
     Taro.navigateTo({ url: `/pages/detail/index?id=${id}` });
@@ -52,6 +55,40 @@ const MinePage: React.FC = () => {
     Taro.navigateTo({ url: '/pages/update/index' });
   };
 
+  const handleDownload = (theme: ThemeItem) => {
+    setDownloadingId(theme.id);
+    setTimeout(() => {
+      downloadTheme(theme.id);
+      setDownloadingId(null);
+      Taro.showToast({ title: '下载成功', icon: 'success' });
+    }, 800);
+  };
+
+  const handleRemoveLocal = (theme: ThemeItem) => {
+    Taro.showModal({
+      title: '删除本地资源',
+      content: `确定要删除「${theme.title}」的本地资源吗？已购记录不会丢失，需要时可重新下载。`,
+      confirmText: '删除',
+      confirmColor: '#EF4444',
+      success: res => {
+        if (res.confirm) {
+          removeLocalTheme(theme.id);
+          Taro.showToast({ title: '已删除本地资源', icon: 'none' });
+        }
+      }
+    });
+  };
+
+  const handleToggleFavorite = (theme: ThemeItem) => {
+    if (isFavorite(theme.id)) {
+      removeFavorite(theme.id);
+      Taro.showToast({ title: '已取消收藏', icon: 'none' });
+    } else {
+      addFavorite(theme);
+      Taro.showToast({ title: '已加入收藏', icon: 'success' });
+    }
+  };
+
   const getListByTab = (): ThemeItem[] => {
     switch (activeTab) {
       case 'purchased': return purchased;
@@ -64,15 +101,21 @@ const MinePage: React.FC = () => {
 
   const currentList = getListByTab();
 
+  const localCount = useMemo(() => {
+    return Object.values(downloadStates).filter(s => s.isLocal).length;
+  }, [downloadStates]);
+
   const getCountByTab = (key: TabKey) => {
     switch (key) {
       case 'purchased': return purchased.length;
-      case 'downloaded': return downloaded.length;
+      case 'downloaded': return localCount;
       case 'trial': return trial.length;
       case 'favorite': return favorite.length;
       default: return 0;
     }
   };
+
+  const getDownloadState = (themeId: string) => downloadStates[themeId];
 
   return (
     <ScrollView className={styles.page} scrollY enhanced showScrollbar={false}>
@@ -91,7 +134,7 @@ const MinePage: React.FC = () => {
           </View>
           <View className={styles.statItem}>
             <Text className={styles.statNum}>{getCountByTab('downloaded')}</Text>
-            <Text className={styles.statLabel}>已下载</Text>
+            <Text className={styles.statLabel}>本地</Text>
           </View>
           <View className={styles.statItem}>
             <Text className={styles.statNum}>{getCountByTab('trial')}</Text>
@@ -128,16 +171,90 @@ const MinePage: React.FC = () => {
                 onClick={() => setActiveTab(tab.key)}
               >
                 {tab.label}
+                <Text className={styles.tabCount}>({getCountByTab(tab.key)})</Text>
               </Text>
             ))}
           </View>
+
           {currentList.length > 0 ? (
-            <View className={styles.listContent}>
-              {currentList.map(theme => (
-                <View key={theme.id} className={styles.miniCard} onClick={() => goDetail(theme.id)}>
-                  <Image className={styles.miniCover} src={theme.cover} mode="aspectFill" />
-                </View>
-              ))}
+            <View className={styles.themeList}>
+              {currentList.map(theme => {
+                const ds = getDownloadState(theme.id);
+                const isLocal = ds?.isLocal;
+                const isDownloading = downloadingId === theme.id;
+                const fav = isFavorite(theme.id);
+                const isPurchased = purchased.some(p => p.id === theme.id);
+                return (
+                  <View key={theme.id} className={styles.themeRow}>
+                    <View
+                      className={styles.themeRowMain}
+                      onClick={() => goDetail(theme.id)}
+                    >
+                      <Image className={styles.rowCover} src={theme.cover} mode="aspectFill" />
+                      <View className={styles.rowInfo}>
+                        <Text className={styles.rowTitle}>{theme.title}</Text>
+                        <Text className={styles.rowMeta}>
+                          {theme.author} · {theme.style}
+                        </Text>
+                        <View className={styles.rowTags}>
+                          {theme.isDynamic && <Text className={styles.rowTag}>动态</Text>}
+                          {theme.isFree ? (
+                            <Text className={styles.rowTagFree}>免费</Text>
+                          ) : (
+                            <Text className={styles.rowTagPrice}>¥{theme.price}</Text>
+                          )}
+                          {isLocal && (
+                            <Text className={styles.rowTagLocal}>本地 {ds?.size || ''}</Text>
+                          )}
+                          {activeTab === 'trial' && (
+                            <Text className={styles.rowTagTrial}>试用中</Text>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+
+                    <View className={styles.rowActions}>
+                      {(activeTab === 'purchased' || activeTab === 'downloaded') && (
+                        <>
+                          {!isLocal ? (
+                            <Text
+                              className={`${styles.actionBtn} ${styles.actionPrimary}`}
+                              onClick={() => handleDownload(theme)}
+                            >
+                              {isDownloading ? '下载中...' : activeTab === 'downloaded' ? '重新下载' : '下载'}
+                            </Text>
+                          ) : (
+                            <Text
+                              className={`${styles.actionBtn} ${styles.actionDanger}`}
+                              onClick={() => handleRemoveLocal(theme)}
+                            >
+                              删除本地
+                            </Text>
+                          )}
+                        </>
+                      )}
+
+                      {activeTab === 'favorite' && (
+                        <Text
+                          className={`${styles.actionBtn} ${fav ? styles.actionWarn : styles.actionPrimary}`}
+                          onClick={() => handleToggleFavorite(theme)}
+                        >
+                          {fav ? '取消收藏' : '加入收藏'}
+                        </Text>
+                      )}
+
+                      {activeTab === 'trial' && !isPurchased && (
+                        <Text
+                          className={`${styles.actionBtn} ${styles.actionPrimary}`}
+                          onClick={() => goDetail(theme.id)}
+                        >
+                          立即购买
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           ) : (
             <EmptyState icon="📂" text="暂无主题" />

@@ -22,14 +22,19 @@ const HomePage: React.FC = () => {
   }, []);
 
   const handleSearch = () => {
+    if (searchText.trim()) {
+      setSearchFilters({ keyword: searchText.trim() });
+    } else {
+      setSearchFilters({ keyword: '' });
+    }
     Taro.switchTab({ url: '/pages/search/index' });
   };
 
   const handleChannelClick = (channelId: string, channelName: string) => {
     if (channelName === '全部') {
-      setSearchFilters({ style: '全部' });
+      setSearchFilters({ style: '全部', keyword: '' });
     } else {
-      setSearchFilters({ style: channelName });
+      setSearchFilters({ style: channelName, keyword: '' });
     }
     Taro.switchTab({ url: '/pages/search/index' });
   };

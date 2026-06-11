@@ -101,10 +101,97 @@ export const myThemes = {
 };
 
 export const orders: OrderItem[] = [
-  { id: 'o1', themeId: 't2', themeTitle: '赛博朋克之夜', themeCover: themes[1].cover, price: 6, status: 'paid', createTime: '2026-06-08 14:30', orderNo: 'TM2026060814300001' },
-  { id: 'o2', themeId: 't4', themeTitle: '樱花物语', themeCover: themes[3].cover, price: 4, status: 'refunding', createTime: '2026-06-05 10:15', orderNo: 'TM2026060510150023' },
-  { id: 'o3', themeId: 't6', themeTitle: '国风水墨', themeCover: themes[5].cover, price: 5, status: 'paid', createTime: '2026-06-01 20:45', orderNo: 'TM2026060120450078' },
-  { id: 'o4', themeId: 't9', themeTitle: '都市霓虹', themeCover: themes[8].cover, price: 8, status: 'refunded', createTime: '2026-05-28 16:20', orderNo: 'TM2026052816200045' }
+  {
+    id: 'o1',
+    themeId: 't2',
+    themeTitle: '赛博朋克之夜',
+    themeCover: themes[1].cover,
+    price: 5,
+    originalPrice: 6,
+    status: 'paid',
+    createTime: '2026-06-08 14:30',
+    orderNo: 'TM2026060814300001',
+    couponId: 'c1',
+    couponTitle: '新人专享券',
+    couponDiscount: 1,
+    invoiceStatus: 'issued'
+  },
+  {
+    id: 'o2',
+    themeId: 't4',
+    themeTitle: '樱花物语',
+    themeCover: themes[3].cover,
+    price: 4,
+    originalPrice: 4,
+    status: 'refunding',
+    createTime: '2026-06-05 10:15',
+    orderNo: 'TM2026060510150023',
+    invoiceStatus: 'requested',
+    refundReason: '与描述不符，动态效果不明显',
+    refundNodes: [
+      { time: '2026-06-09 09:15', status: 'applied', title: '退款申请提交', description: '用户提交退款申请' },
+      { time: '2026-06-09 10:30', status: 'reviewing', title: '客服审核中', description: '正在审核您的退款申请' }
+    ]
+  },
+  {
+    id: 'o3',
+    themeId: 't6',
+    themeTitle: '国风水墨',
+    themeCover: themes[5].cover,
+    price: 5,
+    originalPrice: 5,
+    status: 'paid',
+    createTime: '2026-06-01 20:45',
+    orderNo: 'TM2026060120450078',
+    invoiceStatus: 'none'
+  },
+  {
+    id: 'o4',
+    themeId: 't9',
+    themeTitle: '都市霓虹',
+    themeCover: themes[8].cover,
+    price: 8,
+    originalPrice: 8,
+    status: 'refunded',
+    createTime: '2026-05-28 16:20',
+    orderNo: 'TM2026052816200045',
+    invoiceStatus: 'none',
+    refundReason: '重复购买',
+    refundNodes: [
+      { time: '2026-05-29 08:30', status: 'applied', title: '退款申请提交', description: '用户提交退款申请' },
+      { time: '2026-05-29 14:00', status: 'reviewing', title: '客服审核中', description: '正在审核您的退款申请' },
+      { time: '2026-05-30 09:00', status: 'approved', title: '退款审核通过', description: '退款申请已通过，正在处理退款' },
+      { time: '2026-05-30 15:30', status: 'completed', title: '退款完成', description: '¥8.00 已原路退回至您的支付账户' }
+    ]
+  },
+  {
+    id: 'o5',
+    themeId: 't2',
+    themeTitle: '赛博朋克之夜',
+    themeCover: themes[1].cover,
+    price: 0,
+    originalPrice: 6,
+    status: 'trial',
+    createTime: '2026-06-10 12:00',
+    orderNo: 'TR2026061012000001',
+    invoiceStatus: 'none',
+    trialStartDate: '2026-06-10 12:00',
+    trialDays: 7
+  },
+  {
+    id: 'o6',
+    themeId: 't4',
+    themeTitle: '樱花物语',
+    themeCover: themes[3].cover,
+    price: 0,
+    originalPrice: 4,
+    status: 'trial',
+    createTime: '2026-06-09 09:30',
+    orderNo: 'TR2026060909300002',
+    invoiceStatus: 'none',
+    trialStartDate: '2026-06-09 09:30',
+    trialDays: 7
+  }
 ];
 
 export const coupons: CouponItem[] = [
@@ -119,6 +206,39 @@ export const styleFilters = ['全部', '简约', '清新', '暗黑', '可爱', '
 export const festivalFilters = ['全部', '春节', '情人节', '清明节', '劳动节', '端午节', '中秋节', '国庆节', '圣诞节'];
 
 export const feedbacks: FeedbackItem[] = [
-  { id: 'f1', type: 'adapt', content: '小米14机型适配有问题，图标显示不完整。', images: [], rating: 3, createTime: '2026-06-10 09:30', status: 'processing' },
-  { id: 'f2', type: 'suggest', content: '希望增加更多动态效果选项。', images: [], rating: 5, createTime: '2026-06-08 15:20', status: 'resolved' }
+  {
+    id: 'f1',
+    type: 'adapt',
+    content: '小米14机型适配有问题，图标显示不完整，部分第三方APP图标未正确替换。',
+    images: [],
+    rating: 3,
+    createTime: '2026-06-10 09:30',
+    status: 'processing',
+    themeId: 't2',
+    themeTitle: '赛博朋克之夜',
+    themeCover: themes[1].cover,
+    reply: '您好，感谢反馈！我们已定位到问题是图标包与 MIUI17 存在兼容性问题，预计24小时内推送修复补丁，请留意更新提醒。',
+    replyTime: '2026-06-10 14:20',
+    nodes: [
+      { time: '2026-06-10 09:30', title: '反馈提交', content: '问题已提交，系统自动分配至技术组处理', operator: '系统' },
+      { time: '2026-06-10 11:05', title: '开始处理', content: '客服小美已接单，正在核实问题详情', operator: '客服小美' },
+      { time: '2026-06-10 14:20', title: '首次回复', content: '已回复用户，告知问题原因和修复时间', operator: '客服小美' }
+    ]
+  },
+  {
+    id: 'f2',
+    type: 'suggest',
+    content: '希望增加更多动态效果选项，比如粒子特效、时钟组件等。',
+    images: [],
+    rating: 5,
+    createTime: '2026-06-08 15:20',
+    status: 'resolved',
+    reply: '感谢您的宝贵建议！粒子特效功能已加入 v2.3 版本规划，预计下月底上线，敬请期待~',
+    replyTime: '2026-06-09 10:00',
+    nodes: [
+      { time: '2026-06-08 15:20', title: '反馈提交', content: '建议已提交至产品组', operator: '系统' },
+      { time: '2026-06-09 09:30', title: '产品评估', content: '产品经理评估通过，已加入需求池', operator: '产品经理阿杰' },
+      { time: '2026-06-09 10:00', title: '处理完成', content: '已回复用户，告知上线时间', operator: '客服小白' }
+    ]
+  }
 ];
