@@ -1,0 +1,39 @@
+@use '@/styles/variables.scss' as *;
+
+.wrap {
+  padding: $spacing-md 0;
+}
+
+.label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.tag {
+  padding: 12rpx 24rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  border: 2rpx solid transparent;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.8;
+  }
+
+  &.active {
+    background: $color-bg-tag;
+    color: $color-primary;
+    border-color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}

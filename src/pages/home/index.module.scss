@@ -1,0 +1,207 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: $spacing-xl;
+}
+
+.header {
+  padding: $spacing-lg $page-padding $spacing-md;
+  background: linear-gradient(135deg, $color-gradient-start 0%, $color-gradient-end 100%);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+}
+
+.logo {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: $radius-button;
+  padding: 0 $spacing-lg;
+  height: 80rpx;
+  gap: $spacing-sm;
+}
+
+.searchIcon {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.content {
+  padding: 0 $page-padding;
+  margin-top: -$spacing-md;
+}
+
+.banner {
+  width: 100%;
+  height: 320rpx;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-float;
+}
+
+.bannerItem {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.bannerImg {
+  width: 100%;
+  height: 100%;
+}
+
+.bannerTitle {
+  position: absolute;
+  left: $spacing-lg;
+  bottom: $spacing-lg;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
+}
+
+.channels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.channelItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.channelIcon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  background: $color-bg-hover;
+}
+
+.channelName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.ranking {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.rankingItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.rankNum {
+  width: 48rpx;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-tertiary;
+
+  &.top1 { color: #FF4D4F; }
+  &.top2 { color: #FA8C16; }
+  &.top3 { color: #FADB14; }
+}
+
+.rankCover {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-md;
+  margin-right: $spacing-md;
+  background: $color-bg-hover;
+}
+
+.rankInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.rankTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  margin-bottom: $spacing-xs;
+}
+
+.rankMeta {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.trend {
+  font-size: $font-size-xs;
+
+  &.up { color: $color-success; }
+  &.down { color: $color-error; }
+  &.flat { color: $color-text-tertiary; }
+}
+
+.horizScroll {
+  margin: 0 (-$page-padding);
+  padding: 0 $page-padding;
+}
+
+.scrollWrap {
+  @include scroll-x-container;
+}
+
+.scrollItem {
+  @include scroll-x-item(260rpx);
+  margin-right: $spacing-md;
+}
+
+.scrollItem:last-child {
+  margin-right: 0;
+}
