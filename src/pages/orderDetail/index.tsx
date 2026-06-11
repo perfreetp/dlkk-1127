@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, Image, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import { useStore } from '@/store/useStore';
-import { CouponPicker } from '@/components/CouponPicker';
+import CouponPicker from '@/components/CouponPicker';
 import styles from './index.module.scss';
 
 const statusMap = {
@@ -114,6 +114,10 @@ export default function OrderDetail() {
     setSelectedCouponId(undefined);
     if (res.success) {
       Taro.showToast({ title: `购买成功 ¥${res.finalPrice}`, icon: 'success' });
+      // 购买成功后跳转到新的正式订单详情页
+      setTimeout(() => {
+        Taro.redirectTo({ url: `/pages/orderDetail/index?orderId=${res.orderId}` });
+      }, 600);
     }
   };
 
@@ -124,6 +128,7 @@ export default function OrderDetail() {
     }
     applyRefund(order.id, refundReason.trim());
     setShowRefundModal(false);
+    setRefundReason(''); // 清空输入内容
     Taro.showToast({ title: '申请已提交', icon: 'success' });
   };
 

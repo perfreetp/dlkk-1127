@@ -70,6 +70,7 @@ interface UserActions {
   convertTrialToPurchase: (orderId: string, couponId?: string) => {
     success: boolean;
     order?: OrderItem;
+    orderId: string;
     finalPrice: number;
     savedAmount: number;
   };
@@ -193,14 +194,42 @@ export const useStore = create<UserState & UserActions>()(
         const { orders, purchased, downloaded, coupons, trial } = get();
         const trialOrder = orders.find(o => o.id === orderId && o.status === 'trial');
         if (!trialOrder) {
-          return { success: false, finalPrice: 0, savedAmount: 0 };
+          return { success: false, finalPrice: 0, savedAmount: 0, orderId: '' };
         }
 
         const theme = themes.find(t => t.id === trialOrder.themeId);
         if (!theme) {
-          return { success: false, finalPrice: 0, savedAmount: 0 };
+          return { success: false, finalPrice: 0, savedAmount: 0, orderId: '' };
         }
 
+        // 检查同主题是否已有正式购买记录
+        const existingPaidOrder = orders.find(o => o.themeId === theme.id && o.status === 'paid');
+
+        // 已有购买记录：直接删除试用订单，不新增，返回已有订单ID
+        if (existingPaidOrder) {
+          const newOrders = orders.filter(o => o.id !== orderId); // 删除试用订单
+          const newTrial = trial.filter(t => t.id !== theme.id);
+
+          set({
+            orders: newOrders,
+            trial: newTrial
+          });
+
+          console.log('[Store] trial converted (existing order found):', {
+            themeId: theme.id,
+            existingOrderId: existingPaidOrder.id
+          });
+
+          return {
+            success: true,
+            order: existingPaidOrder,
+            orderId: existingPaidOrder.id,
+            finalPrice: existingPaidOrder.price,
+            savedAmount: 0
+          };
+        }
+
+        // 没有购买记录：创建新订单
         let finalPrice = theme.price;
         let savedAmount = 0;
         let usedCoupon: CouponItem | undefined;
@@ -262,8 +291,8 @@ export const useStore = create<UserState & UserActions>()(
           downloadStates: newDownloadStates
         });
 
-        console.log('[Store] trial converted:', { orderNo, finalPrice, savedAmount });
-        return { success: true, order: newOrder, finalPrice, savedAmount };
+        console.log('[Store] trial converted (new order):', { orderNo, finalPrice, savedAmount, orderId: newOrder.id });
+        return { success: true, order: newOrder, orderId: newOrder.id, finalPrice, savedAmount };
       },
 
       purchaseTheme: (theme, couponId) => {

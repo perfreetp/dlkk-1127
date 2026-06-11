@@ -126,6 +126,10 @@ const OrderPage: React.FC = () => {
     setCurrentTrialOrder(null);
     if (res.success) {
       Taro.showToast({ title: `购买成功 ¥${res.finalPrice}`, icon: 'success' });
+      // 购买成功后跳转到新的正式订单详情页
+      setTimeout(() => {
+        Taro.navigateTo({ url: `/pages/orderDetail/index?orderId=${res.orderId}` });
+      }, 600);
     }
   };
 
