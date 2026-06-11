@@ -259,3 +259,166 @@
   &.processing { color: $color-primary; }
   &.resolved { color: $color-success; }
 }
+
+.historyCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.historyTheme {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  margin-bottom: $spacing-xs;
+  background: rgba(124, 58, 237, 0.08);
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-sm;
+}
+
+.themeSelector {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  gap: $spacing-md;
+
+  &:active {
+    background: $color-bg-tag;
+  }
+}
+
+.selectPlaceholder {
+  flex: 1;
+  color: $color-text-tertiary;
+  font-size: $font-size-md;
+}
+
+.selectArrow {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.selectedTheme {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  min-width: 0;
+}
+
+.selectedThemeCover {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-sm;
+  background: $color-bg-card;
+  flex-shrink: 0;
+}
+
+.selectedThemeName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+}
+
+.pickerMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pickerPanel {
+  width: 100%;
+  max-height: 70vh;
+  background: $color-bg-card;
+  border-radius: $radius-xl $radius-xl 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.pickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  flex-shrink: 0;
+}
+
+.pickerTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.pickerClose {
+  font-size: $font-size-xl;
+  color: $color-text-tertiary;
+  padding: $spacing-xs;
+}
+
+.pickerList {
+  flex: 1;
+  padding: $spacing-md $page-padding;
+  overflow-y: auto;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  gap: $spacing-md;
+  border: 2rpx solid transparent;
+  margin-bottom: $spacing-sm;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+
+  &.pickerItemActive {
+    background: $color-bg-tag;
+    border-color: $color-primary;
+  }
+}
+
+.pickerItemCover {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  flex-shrink: 0;
+}
+
+.pickerItemName {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+}
+
+.pickerCheck {
+  font-size: $font-size-lg;
+  color: $color-primary;
+  font-weight: $font-weight-bold;
+}

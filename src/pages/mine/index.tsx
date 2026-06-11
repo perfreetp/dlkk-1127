@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import EmptyState from '@/components/EmptyState';
-import { myThemes } from '@/data/mockData';
 import { ThemeItem } from '@/types/theme';
+import { useStore } from '@/store/useStore';
 
 type TabKey = 'purchased' | 'downloaded' | 'trial' | 'favorite';
 
@@ -17,6 +17,16 @@ const tabs: { key: TabKey; label: string }[] = [
 
 const MinePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('purchased');
+
+  const purchased = useStore(s => s.purchased);
+  const downloaded = useStore(s => s.downloaded);
+  const trial = useStore(s => s.trial);
+  const favorite = useStore(s => s.favorite);
+  const updateAvailable = useStore(s => s.updateAvailable);
+
+  useDidShow(() => {
+    console.log('[MinePage] page show, purchased:', purchased.length, 'favorite:', favorite.length);
+  });
 
   useEffect(() => {
     console.log('[MinePage] mounted');
@@ -38,7 +48,31 @@ const MinePage: React.FC = () => {
     Taro.navigateTo({ url: '/pages/feedback/index' });
   };
 
-  const currentList: ThemeItem[] = myThemes[activeTab];
+  const goUpdate = () => {
+    Taro.navigateTo({ url: '/pages/update/index' });
+  };
+
+  const getListByTab = (): ThemeItem[] => {
+    switch (activeTab) {
+      case 'purchased': return purchased;
+      case 'downloaded': return downloaded;
+      case 'trial': return trial;
+      case 'favorite': return favorite;
+      default: return [];
+    }
+  };
+
+  const currentList = getListByTab();
+
+  const getCountByTab = (key: TabKey) => {
+    switch (key) {
+      case 'purchased': return purchased.length;
+      case 'downloaded': return downloaded.length;
+      case 'trial': return trial.length;
+      case 'favorite': return favorite.length;
+      default: return 0;
+    }
+  };
 
   return (
     <ScrollView className={styles.page} scrollY enhanced showScrollbar={false}>
@@ -52,33 +86,33 @@ const MinePage: React.FC = () => {
         </View>
         <View className={styles.statsRow}>
           <View className={styles.statItem}>
-            <Text className={styles.statNum}>{myThemes.purchased.length}</Text>
+            <Text className={styles.statNum}>{getCountByTab('purchased')}</Text>
             <Text className={styles.statLabel}>已购</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNum}>{myThemes.downloaded.length}</Text>
+            <Text className={styles.statNum}>{getCountByTab('downloaded')}</Text>
             <Text className={styles.statLabel}>已下载</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNum}>{myThemes.trial.length}</Text>
+            <Text className={styles.statNum}>{getCountByTab('trial')}</Text>
             <Text className={styles.statLabel}>试用中</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNum}>{myThemes.favorite.length}</Text>
+            <Text className={styles.statNum}>{getCountByTab('favorite')}</Text>
             <Text className={styles.statLabel}>收藏</Text>
           </View>
         </View>
       </View>
 
       <View className={styles.content}>
-        {myThemes.updateAvailable.length > 0 && (
-          <View className={styles.sectionCard} onClick={goDetail}>
+        {updateAvailable.length > 0 && (
+          <View className={styles.sectionCard} onClick={goUpdate}>
             <View className={styles.menuItem}>
               <View className={styles.menuIcon}>🔄</View>
               <Text className={styles.menuText}>
-                {myThemes.updateAvailable.length} 个主题可更新
+                {updateAvailable.length} 个主题可更新
               </Text>
-              <View className={styles.badge}>{myThemes.updateAvailable.length}</View>
+              <View className={styles.badge}>{updateAvailable.length}</View>
               <Text className={styles.menuArrow}>›</Text>
             </View>
           </View>

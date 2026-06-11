@@ -1,23 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import TagFilter from '@/components/TagFilter';
 import ThemeCard from '@/components/ThemeCard';
 import EmptyState from '@/components/EmptyState';
 import { themes, colorFilters, styleFilters, festivalFilters } from '@/data/mockData';
+import { useStore } from '@/store/useStore';
 
 const SearchPage: React.FC = () => {
-  const [keyword, setKeyword] = useState('');
-  const [color, setColor] = useState('全部');
-  const [style, setStyle] = useState('全部');
-  const [festival, setFestival] = useState('全部');
-  const [freeOnly, setFreeOnly] = useState(false);
-  const [dynamicOnly, setDynamicOnly] = useState(false);
+  const searchFilters = useStore(s => s.searchFilters);
+  const setSearchFilters = useStore(s => s.setSearchFilters);
 
-  useEffect(() => {
-    console.log('[SearchPage] mounted, total themes:', themes.length);
-  }, []);
+  const { keyword, color, style, festival, freeOnly, dynamicOnly } = searchFilters;
+
+  useDidShow(() => {
+    console.log('[SearchPage] page show, current filters:', searchFilters);
+  });
 
   const filteredThemes = useMemo(() => {
     let result = themes;
@@ -38,7 +37,52 @@ const SearchPage: React.FC = () => {
     return result;
   }, [keyword, color, style, festival, freeOnly, dynamicOnly]);
 
-  const clearKeyword = () => setKeyword('');
+  const hasActiveFilter = keyword || color !== '全部' || style !== '全部' || festival !== '全部' || freeOnly || dynamicOnly;
+
+  const activeTags = [];
+  if (style !== '全部') activeTags.push({ label: `风格:${style}`, key: 'style', value: style });
+  if (color !== '全部') activeTags.push({ label: `颜色:${color}`, key: 'color', value: color });
+  if (festival !== '全部') activeTags.push({ label: `节日:${festival}`, key: 'festival', value: festival });
+  if (freeOnly) activeTags.push({ label: '免费', key: 'freeOnly', value: true });
+  if (dynamicOnly) activeTags.push({ label: '动态', key: 'dynamicOnly', value: true });
+
+  const handleRemoveTag = (key: string) => {
+    switch (key) {
+      case 'style': setSearchFilters({ style: '全部' }); break;
+      case 'color': setSearchFilters({ color: '全部' }); break;
+      case 'festival': setSearchFilters({ festival: '全部' }); break;
+      case 'freeOnly': setSearchFilters({ freeOnly: false }); break;
+      case 'dynamicOnly': setSearchFilters({ dynamicOnly: false }); break;
+    }
+  };
+
+  const handleKeywordChange = (val: string) => {
+    setSearchFilters({ keyword: val });
+  };
+
+  const handleColorChange = (tag: string) => {
+    setSearchFilters({ color: tag });
+  };
+
+  const handleStyleChange = (tag: string) => {
+    setSearchFilters({ style: tag });
+  };
+
+  const handleFestivalChange = (tag: string) => {
+    setSearchFilters({ festival: tag });
+  };
+
+  const handleFreeToggle = () => {
+    setSearchFilters({ freeOnly: !freeOnly });
+  };
+
+  const handleDynamicToggle = () => {
+    setSearchFilters({ dynamicOnly: !dynamicOnly });
+  };
+
+  const clearKeyword = () => {
+    setSearchFilters({ keyword: '' });
+  };
 
   return (
     <ScrollView className={styles.page} scrollY enhanced showScrollbar={false}>
@@ -49,22 +93,35 @@ const SearchPage: React.FC = () => {
           placeholder="搜索主题、作者、标签..."
           placeholderClass={styles.searchInput}
           value={keyword}
-          onInput={e => setKeyword(e.detail.value)}
+          onInput={e => handleKeywordChange(e.detail.value)}
           confirmType="search"
         />
         {keyword && <Text className={styles.clearIcon} onClick={clearKeyword}>✕</Text>}
       </View>
 
+      {hasActiveFilter && activeTags.length > 0 && (
+        <View className={styles.activeFilters}>
+          {activeTags.map(tag => (
+            <Text key={tag.key} className={styles.activeTag} onClick={() => handleRemoveTag(tag.key)}>
+              {tag.label} ✕
+            </Text>
+          ))}
+          <Text className={styles.clearAll} onClick={() => useStore.getState().resetSearchFilters()}>
+            清空全部
+          </Text>
+        </View>
+      )}
+
       <View className={styles.filterSection}>
-        <TagFilter label="颜色" tags={colorFilters} activeTag={color} onChange={setColor} />
-        <TagFilter label="风格" tags={styleFilters} activeTag={style} onChange={setStyle} />
-        <TagFilter label="节日" tags={festivalFilters} activeTag={festival} onChange={setFestival} />
+        <TagFilter label="颜色" tags={colorFilters} activeTag={color} onChange={handleColorChange} />
+        <TagFilter label="风格" tags={styleFilters} activeTag={style} onChange={handleStyleChange} />
+        <TagFilter label="节日" tags={festivalFilters} activeTag={festival} onChange={handleFestivalChange} />
 
         <View className={styles.toggleRow}>
           <Text className={styles.toggleLabel}>仅看免费</Text>
           <View
             className={`${styles.toggleSwitch} ${freeOnly ? styles.active : ''}`}
-            onClick={() => setFreeOnly(!freeOnly)}
+            onClick={handleFreeToggle}
           />
         </View>
 
@@ -72,7 +129,7 @@ const SearchPage: React.FC = () => {
           <Text className={styles.toggleLabel}>仅看动态效果</Text>
           <View
             className={`${styles.toggleSwitch} ${dynamicOnly ? styles.active : ''}`}
-            onClick={() => setDynamicOnly(!dynamicOnly)}
+            onClick={handleDynamicToggle}
           />
         </View>
       </View>

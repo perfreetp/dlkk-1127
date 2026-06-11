@@ -1,15 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Image, Swiper, SwiperItem } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { themes, creators } from '@/data/mockData';
 import { ThemeItem, CreatorInfo } from '@/types/theme';
+import { useStore } from '@/store/useStore';
+import CouponPicker from '@/components/CouponPicker';
 
 const DetailPage: React.FC = () => {
   const router = useRouter();
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isFollowed, setIsFollowed] = useState(false);
+  const [couponPickerVisible, setCouponPickerVisible] = useState(false);
+  const [selectedCouponId, setSelectedCouponId] = useState<string | undefined>();
+
+  const favorite = useStore(s => s.favorite);
+  const addFavorite = useStore(s => s.addFavorite);
+  const removeFavorite = useStore(s => s.removeFavorite);
+  const addTrial = useStore(s => s.addTrial);
+  const trial = useStore(s => s.trial);
+  const purchaseTheme = useStore(s => s.purchaseTheme);
+  const coupons = useStore(s => s.coupons);
 
   const theme: ThemeItem | undefined = useMemo(() => {
     const id = router.params.id;
@@ -22,14 +33,52 @@ const DetailPage: React.FC = () => {
     return creators.find(c => c.id === theme?.authorId) || creators[0];
   }, [theme]);
 
+  const isFavorite = useMemo(() => {
+    return favorite.some(f => f.id === theme?.id);
+  }, [favorite, theme]);
+
+  const isTrial = useMemo(() => {
+    return trial.some(t => t.id === theme?.id);
+  }, [trial, theme]);
+
+  const finalPrice = useMemo(() => {
+    if (!theme) return 0;
+    if (theme.isFree) return 0;
+    if (!selectedCouponId) return theme.price;
+    const coupon = coupons.find(c => c.id === selectedCouponId && !c.isUsed);
+    if (coupon && theme.price >= coupon.minAmount) {
+      return Math.max(0, theme.price - coupon.discount);
+    }
+    return theme.price;
+  }, [theme, selectedCouponId, coupons]);
+
+  const savedAmount = useMemo(() => {
+    if (!theme || theme.isFree) return 0;
+    return theme.price - finalPrice;
+  }, [theme, finalPrice]);
+
+  useDidShow(() => {
+    console.log('[DetailPage] page show, themeId:', theme?.id);
+  });
+
+  useEffect(() => {
+    console.log('[DetailPage] mounted');
+  }, []);
+
   const formatNum = (n: number) => {
     if (n >= 10000) return `${(n / 10000).toFixed(1)}万`;
     return n.toString();
   };
 
   const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    Taro.showToast({ title: isFavorite ? '已取消收藏' : '收藏成功', icon: 'success' });
+    if (!theme) return;
+    if (isFavorite) {
+      removeFavorite(theme.id);
+      Taro.showToast({ title: '已取消收藏', icon: 'success' });
+    } else {
+      addFavorite(theme);
+      Taro.showToast({ title: '收藏成功', icon: 'success' });
+    }
   };
 
   const handleFollow = () => {
@@ -38,25 +87,45 @@ const DetailPage: React.FC = () => {
   };
 
   const handleTrial = () => {
+    if (!theme) return;
+    if (isTrial) {
+      Taro.showToast({ title: '已在试用中', icon: 'none' });
+      return;
+    }
+    addTrial(theme);
     Taro.showToast({ title: '开始试用', icon: 'success' });
   };
 
   const handleBuy = () => {
-    if (theme?.isFree) {
+    if (!theme) return;
+    if (theme.isFree) {
+      purchaseTheme(theme);
       Taro.showToast({ title: '下载成功', icon: 'success' });
-    } else {
-      Taro.showModal({
-        title: '确认购买',
-        content: `确定支付 ¥${theme?.price} 购买该主题吗？`,
-        confirmText: '立即支付',
-        confirmColor: '#7C3AED',
-        success: res => {
-          if (res.confirm) {
+      return;
+    }
+    const priceText = selectedCouponId && savedAmount > 0
+      ? `原价 ¥${theme.price}，优惠券抵扣 ¥${savedAmount}，实付 ¥${finalPrice}`
+      : `确定支付 ¥${theme.price} 购买该主题吗？`;
+    Taro.showModal({
+      title: '确认购买',
+      content: priceText,
+      confirmText: '立即支付',
+      confirmColor: '#7C3AED',
+      success: res => {
+        if (res.confirm) {
+          const result = purchaseTheme(theme, selectedCouponId);
+          if (result.success) {
+            setSelectedCouponId(undefined);
             Taro.showToast({ title: '购买成功', icon: 'success' });
           }
         }
-      });
-    }
+      }
+    });
+  };
+
+  const handleCouponConfirm = (couponId?: string) => {
+    setSelectedCouponId(couponId);
+    setCouponPickerVisible(false);
   };
 
   const goCreator = () => {
@@ -102,9 +171,14 @@ const DetailPage: React.FC = () => {
           </View>
           <View className={styles.priceBox}>
             <Text className={`${styles.price} ${theme.isFree ? styles.free : ''}`}>
-              {theme.isFree ? '免费' : `¥${theme.price}`}
+              {theme.isFree ? '免费' : `¥${finalPrice}`}
             </Text>
-            <Text className={styles.priceLabel}>{theme.isFree ? '立即下载' : '限时特惠'}</Text>
+            {!theme.isFree && savedAmount > 0 && (
+              <Text className={styles.priceLabel}>已省 ¥{savedAmount}</Text>
+            )}
+            {!theme.isFree && savedAmount === 0 && (
+              <Text className={styles.priceLabel}>限时特惠</Text>
+            )}
           </View>
         </View>
 
@@ -189,11 +263,30 @@ const DetailPage: React.FC = () => {
           <Text className={styles.actionIcon}>{isFavorite ? '❤️' : '🤍'}</Text>
           <Text className={styles.actionText}>{isFavorite ? '已收藏' : '收藏'}</Text>
         </View>
-        <View className={styles.trialBtn} onClick={handleTrial}>试用</View>
+        {!theme.isFree && (
+          <View className={styles.actionBtn} onClick={() => setCouponPickerVisible(true)}>
+            <Text className={styles.actionIcon}>🎫</Text>
+            <Text className={styles.actionText}>
+              {selectedCouponId ? '已选券' : '优惠券'}
+            </Text>
+          </View>
+        )}
+        <View className={styles.trialBtn} onClick={handleTrial}>
+          {isTrial ? '试用中' : '试用'}
+        </View>
         <View className={`${styles.buyBtn} ${theme.isFree ? styles.free : ''}`} onClick={handleBuy}>
-          {theme.isFree ? '免费下载' : `¥${theme.price} 购买`}
+          {theme.isFree ? '免费下载' : `¥${finalPrice} 购买`}
         </View>
       </View>
+
+      <CouponPicker
+        visible={couponPickerVisible}
+        coupons={coupons}
+        selectedId={selectedCouponId}
+        price={theme.price}
+        onConfirm={handleCouponConfirm}
+        onClose={() => setCouponPickerVisible(false)}
+      />
     </View>
   );
 };

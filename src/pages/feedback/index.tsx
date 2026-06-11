@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Image, Textarea, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { feedbacks } from '@/data/mockData';
-import { FeedbackItem } from '@/types/theme';
+import { FeedbackItem, ThemeItem } from '@/types/theme';
 import EmptyState from '@/components/EmptyState';
+import { useStore } from '@/store/useStore';
+import { themes } from '@/data/mockData';
 
 type FeedbackType = 'adapt' | 'bug' | 'suggest' | 'infringement';
 
@@ -26,14 +27,40 @@ const FeedbackPage: React.FC = () => {
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(5);
   const [images, setImages] = useState<string[]>([]);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeItem | null>(null);
+  const [themePickerVisible, setThemePickerVisible] = useState(false);
 
-  useEffect(() => {
-    console.log('[FeedbackPage] mounted, history count:', feedbacks.length);
-  }, []);
+  const feedbacks = useStore(s => s.feedbacks);
+  const addFeedback = useStore(s => s.addFeedback);
+  const purchased = useStore(s => s.purchased);
+  const downloaded = useStore(s => s.downloaded);
+
+  useDidShow(() => {
+    console.log('[FeedbackPage] page show, feedbacks count:', feedbacks.length);
+  });
+
+  const needTheme = type === 'adapt' || type === 'infringement';
+
+  const selectableThemes = useMemo(() => {
+    if (purchased.length > 0 || downloaded.length > 0) {
+      const ids = new Set<string>();
+      const result: ThemeItem[] = [];
+      [...purchased, ...downloaded].forEach(t => {
+        if (!ids.has(t.id)) {
+          ids.add(t.id);
+          result.push(t);
+        }
+      });
+      return result;
+    }
+    return themes.slice(0, 6);
+  }, [purchased, downloaded]);
 
   const handleQuickClick = (quickType: FeedbackType) => {
     setType(quickType);
-    Taro.showToast({ title: `已选择${typeOptions.find(o => o.key === quickType)?.label}`, icon: 'none' });
+    if (quickType !== 'adapt' && quickType !== 'infringement') {
+      setSelectedTheme(null);
+    }
   };
 
   const handleUpload = () => {
@@ -57,20 +84,38 @@ const FeedbackPage: React.FC = () => {
     setImages(images.filter((_, i) => i !== idx));
   };
 
+  const handleSelectTheme = (theme: ThemeItem) => {
+    setSelectedTheme(theme);
+    setThemePickerVisible(false);
+  };
+
   const handleSubmit = () => {
     if (!content.trim()) {
       Taro.showToast({ title: '请输入反馈内容', icon: 'none' });
       return;
     }
-    console.log('[FeedbackPage] submit:', { type, content, rating, images });
+    if (needTheme && !selectedTheme) {
+      Taro.showToast({ title: '请选择关联主题', icon: 'none' });
+      return;
+    }
+
     Taro.showLoading({ title: '提交中...' });
     setTimeout(() => {
       Taro.hideLoading();
+      addFeedback({
+        type,
+        content: content.trim(),
+        images,
+        rating,
+        themeId: selectedTheme?.id,
+        themeTitle: selectedTheme?.title
+      });
       Taro.showToast({ title: '提交成功', icon: 'success' });
       setContent('');
       setImages([]);
       setRating(5);
-    }, 1000);
+      setSelectedTheme(null);
+    }, 500);
   };
 
   return (
@@ -101,6 +146,26 @@ const FeedbackPage: React.FC = () => {
             ))}
           </View>
         </View>
+
+        {needTheme && (
+          <View className={styles.formSection}>
+            <Text className={styles.formLabel}>关联主题</Text>
+            <View
+              className={styles.themeSelector}
+              onClick={() => setThemePickerVisible(true)}
+            >
+              {selectedTheme ? (
+                <View className={styles.selectedTheme}>
+                  <Image className={styles.selectedThemeCover} src={selectedTheme.cover} mode="aspectFill" />
+                  <Text className={styles.selectedThemeName}>{selectedTheme.title}</Text>
+                </View>
+              ) : (
+                <Text className={styles.selectPlaceholder}>请选择要反馈的主题</Text>
+              )}
+              <Text className={styles.selectArrow}>›</Text>
+            </View>
+          </View>
+        )}
 
         <View className={styles.formSection}>
           <Text className={styles.formLabel}>问题描述</Text>
@@ -159,6 +224,7 @@ const FeedbackPage: React.FC = () => {
       <View className={styles.historySection}>
         <View className={styles.historyHeader}>
           <Text className={styles.historyTitle}>历史反馈</Text>
+          <Text className={styles.historyCount}>共 {feedbacks.length} 条</Text>
         </View>
         {feedbacks.length > 0 ? (
           feedbacks.map((f: FeedbackItem) => (
@@ -166,6 +232,9 @@ const FeedbackPage: React.FC = () => {
               <Text className={styles.historyType}>
                 {typeOptions.find(o => o.key === f.type)?.label || f.type}
               </Text>
+              {f.themeTitle && (
+                <Text className={styles.historyTheme}>关联主题：{f.themeTitle}</Text>
+              )}
               <Text className={styles.historyText}>{f.content}</Text>
               <View className={styles.historyMeta}>
                 <Text className={styles.historyTime}>{f.createTime}</Text>
@@ -179,6 +248,30 @@ const FeedbackPage: React.FC = () => {
           <EmptyState icon="📝" text="暂无反馈记录" />
         )}
       </View>
+
+      {themePickerVisible && (
+        <View className={styles.pickerMask} onClick={() => setThemePickerVisible(false)}>
+          <View className={styles.pickerPanel} onClick={e => e.stopPropagation()}>
+            <View className={styles.pickerHeader}>
+              <Text className={styles.pickerTitle}>选择主题</Text>
+              <Text className={styles.pickerClose} onClick={() => setThemePickerVisible(false)}>✕</Text>
+            </View>
+            <ScrollView className={styles.pickerList} scrollY enhanced showScrollbar={false}>
+              {selectableThemes.map(theme => (
+                <View
+                  key={theme.id}
+                  className={`${styles.pickerItem} ${selectedTheme?.id === theme.id ? styles.pickerItemActive : ''}`}
+                  onClick={() => handleSelectTheme(theme)}
+                >
+                  <Image className={styles.pickerItemCover} src={theme.cover} mode="aspectFill" />
+                  <Text className={styles.pickerItemName}>{theme.title}</Text>
+                  {selectedTheme?.id === theme.id && <Text className={styles.pickerCheck}>✓</Text>}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 };

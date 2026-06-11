@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, Image, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { orders, coupons } from '@/data/mockData';
 import { OrderItem, CouponItem } from '@/types/theme';
 import EmptyState from '@/components/EmptyState';
+import InvoiceForm from '@/components/InvoiceForm';
+import { useStore } from '@/store/useStore';
 
 type TabKey = 'all' | 'paid' | 'refunding' | 'refunded';
 
@@ -24,15 +25,22 @@ const statusMap: Record<string, string> = {
 
 const OrderPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
+  const [invoiceVisible, setInvoiceVisible] = useState(false);
 
-  useEffect(() => {
-    console.log('[OrderPage] mounted, orders count:', orders.length);
-  }, []);
+  const orders = useStore(s => s.orders);
+  const coupons = useStore(s => s.coupons);
+  const invoiceInfo = useStore(s => s.invoiceInfo);
+  const applyRefund = useStore(s => s.applyRefund);
+  const setInvoiceInfo = useStore(s => s.setInvoiceInfo);
+
+  useDidShow(() => {
+    console.log('[OrderPage] page show, orders count:', orders.length);
+  });
 
   const filteredOrders: OrderItem[] = useMemo(() => {
     if (activeTab === 'all') return orders;
     return orders.filter(o => o.status === activeTab);
-  }, [activeTab]);
+  }, [activeTab, orders]);
 
   const availableCoupons: CouponItem[] = coupons.filter(c => !c.isUsed);
 
@@ -48,14 +56,22 @@ const OrderPage: React.FC = () => {
       confirmColor: '#F53F3F',
       success: res => {
         if (res.confirm) {
+          applyRefund(order.id);
           Taro.showToast({ title: '退款申请已提交', icon: 'success' });
         }
       }
     });
   };
 
-  const handleInvoice = () => {
-    Taro.showToast({ title: '发票功能开发中', icon: 'none' });
+  const handleInvoiceSave = (data: {
+    type: 'personal' | 'company';
+    title: string;
+    taxNo?: string;
+    email: string;
+  }) => {
+    setInvoiceInfo(data);
+    setInvoiceVisible(false);
+    Taro.showToast({ title: '保存成功', icon: 'success' });
   };
 
   return (
@@ -111,11 +127,13 @@ const OrderPage: React.FC = () => {
         <View className={styles.couponSection}>
           <View className={styles.sectionHeader}>
             <Text className={styles.sectionTitle}>🎫 我的优惠券</Text>
-            <Text className={styles.sectionMore}>全部 ›</Text>
+            <Text className={styles.sectionMore}>
+              {availableCoupons.length} 张可用 ›
+            </Text>
           </View>
           <View className={styles.couponList}>
             {availableCoupons.length > 0 ? (
-              availableCoupons.slice(0, 3).map(c => (
+              availableCoupons.map(c => (
                 <View key={c.id} className={`${styles.couponItem} ${c.isUsed ? styles.used : ''}`}>
                   <View className={styles.couponLeft}>
                     <Text className={styles.couponAmount}>{c.discount}</Text>
@@ -135,12 +153,29 @@ const OrderPage: React.FC = () => {
           </View>
         </View>
 
-        <View className={styles.invoiceRow} onClick={handleInvoice}>
+        <View className={styles.invoiceRow} onClick={() => setInvoiceVisible(true)}>
           <View className={styles.invoiceIcon}>🧾</View>
-          <Text className={styles.invoiceText}>发票信息</Text>
+          <View style={{ flex: 1 }}>
+            <Text className={styles.invoiceText}>发票信息</Text>
+            {invoiceInfo.title && (
+              <Text style={{ fontSize: '24rpx', color: '#86909C', marginTop: '8rpx' }}>
+                {invoiceInfo.type === 'personal' ? '个人' : '企业'} · {invoiceInfo.title}
+              </Text>
+            )}
+          </View>
           <Text className={styles.invoiceArrow}>›</Text>
         </View>
       </View>
+
+      <InvoiceForm
+        visible={invoiceVisible}
+        initialType={invoiceInfo.type}
+        initialTitle={invoiceInfo.title}
+        initialTaxNo={invoiceInfo.taxNo}
+        initialEmail={invoiceInfo.email}
+        onSave={handleInvoiceSave}
+        onClose={() => setInvoiceVisible(false)}
+      />
     </ScrollView>
   );
 };

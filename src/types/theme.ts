@@ -87,4 +87,6 @@ export interface FeedbackItem {
   rating: number;
   createTime: string;
   status: 'pending' | 'processing' | 'resolved';
+  themeId?: string;
+  themeTitle?: string;
 }

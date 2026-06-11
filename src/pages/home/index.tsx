@@ -6,10 +6,12 @@ import SectionHeader from '@/components/SectionHeader';
 import ThemeCard from '@/components/ThemeCard';
 import { banners, styleChannels, rankingList, dynamicThemes, newArrivals, themes } from '@/data/mockData';
 import { ThemeItem } from '@/types/theme';
+import { useStore } from '@/store/useStore';
 
 const HomePage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const setSearchFilters = useStore(s => s.setSearchFilters);
 
   useDidShow(() => {
     console.log('[HomePage] page show');
@@ -23,7 +25,12 @@ const HomePage: React.FC = () => {
     Taro.switchTab({ url: '/pages/search/index' });
   };
 
-  const handleChannelClick = (channelId: string) => {
+  const handleChannelClick = (channelId: string, channelName: string) => {
+    if (channelName === '全部') {
+      setSearchFilters({ style: '全部' });
+    } else {
+      setSearchFilters({ style: channelName });
+    }
     Taro.switchTab({ url: '/pages/search/index' });
   };
 
@@ -89,7 +96,7 @@ const HomePage: React.FC = () => {
 
         <View className={styles.channels}>
           {styleChannels.map(c => (
-            <View key={c.id} className={styles.channelItem} onClick={() => handleChannelClick(c.id)}>
+            <View key={c.id} className={styles.channelItem} onClick={() => handleChannelClick(c.id, c.name)}>
               <View className={styles.channelIcon} style={{ background: `${c.color}15` }}>
                 <Text>{c.icon}</Text>
               </View>
